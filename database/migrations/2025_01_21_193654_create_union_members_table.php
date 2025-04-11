@@ -17,6 +17,7 @@ return new class extends Migration
         $table->id();
         $table->unsignedBigInteger('union_id'); // Foreign key for the union
         $table->unsignedBigInteger('user_id'); // Foreign key for the user
+        $table->enum('status', ['active', 'inactive'])->default('active'); // Track membership status
         $table->timestamps();
 
         // Foreign keys

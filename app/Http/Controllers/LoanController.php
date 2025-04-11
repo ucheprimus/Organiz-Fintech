@@ -4,10 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Loan;
 use App\Models\LoanType;
+use App\Models\repayment;
+use App\Models\saving;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TransactionNotification;
+use App\Models\Client;
+use App\Models\LoanApply;
+use App\Models\LoanOfficer;
+use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class LoanController extends Controller
@@ -47,172 +58,419 @@ class LoanController extends Controller
     }
 
 
-//     public function store(Request $request)
-// {
-//     try {
-//         // Fetch the selected loan type
-//         $loanType = LoanType::find($request->loanType);
-
-//         if (!$loanType) {
-//             return redirect()->back()->withErrors(['loanType' => 'Invalid loan type selected'])->withInput();
-//         }
-
-//         // Custom validation rules
-//         $validator = Validator::make($request->all(), [
-//             'loanAmount' => [
-//                 'required',
-//                 'numeric',
-//                 function ($attribute, $value, $fail) use ($loanType) {
-//                     if ($value < $loanType->min_amount || $value > $loanType->max_amount) {
-//                         $fail("The loan amount must be between {$loanType->min_amount} and {$loanType->max_amount}.");
-//                     }
-//                 },
-//             ],
-//             'loanType' => 'required|exists:loan_types,id',
-//             'loanDuration' => 'required|integer',
-//             'loanStartDate' => 'required|date',
-//             'loanEndDate' => 'required|date|after:loanStartDate',
-//             'loanPurpose' => 'nullable|string',
-//             'collateralType' => 'nullable|string',
-//         ]);
-
-//         if ($validator->fails()) {
-//             return redirect()->back()->withErrors($validator)->withInput();
-//         }
-
-//         // Fetch the user using the search query
-//         $user = User::where('id', $request->user_id)->first();
-
-//         if (!$user) {
-//             return redirect()->back()->withErrors(['user' => 'Invalid user selected'])->withInput();
-//         }
-
-//         // Save loan details, associating the loan with the user via user_id
-//         Loan::create([
-//             'user_id' => $user->id, // Use the user_id here, not user_name
-//             'loan_type_id' => $loanType->id,
-//             'loan_amount' => $request->loanAmount,
-//             'interest_rate' => $loanType->interest_rate,
-//             'loan_duration' => $request->loanDuration,
-//             'loan_start_date' => $request->loanStartDate,
-//             'loan_end_date' => $request->loanEndDate,
-//             'loan_purpose' => $request->loanPurpose,
-//             'collateral_type' => $request->collateralType,
-//         ]);
-
-//         return redirect()->route('general.loan')->with('success', 'Loan application submitted successfully.');
-//     } catch (\Exception $e) {
-//         // Log the error for debugging
-//         Log::error('Error storing loan application: ' . $e->getMessage());
-
-//         // Return an error message to the user
-//         return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
-//     }
-// }
-
-
-// public function store(Request $request)
-//     {
-//         // Validation
-//         $validator = Validator::make($request->all(), [
-//             'user_id' => 'required|exists:users,id',
-//             'loanType' => 'required|exists:loan_types,id',
-//             'loanAmount' => 'required|numeric|min:1000',
-//             'interestRate' => 'required|numeric|min:0|max:100',
-//             'loanDuration' => 'required|integer|min:1',
-//             'loanStartDate' => 'required|date',
-//             'loanEndDate' => 'required|date|after:loanStartDate',
-//             'loanPurpose' => 'nullable|string|max:255',
-//             'collateralType' => 'nullable|string|max:255',
-//             'repaymentFrequency' => 'required|in:Weekly,Monthly,Twice_a_month,Quarterly,Annually',
-//         ]);
-
-//         if ($validator->fails()) {
-//             return back()->withErrors($validator)->withInput();
-//         }
-
-//         // Calculate Total Expected Amount and Payment Amount
-//         $loanAmount = $request->loanAmount;
-//         $interestRate = $request->interestRate;
-//         $totalExpectedAmount = $loanAmount + ($loanAmount * $interestRate / 100);
-
-//         // Determine Number of Installments Based on Repayment Frequency
-//         $installments = match ($request->repaymentFrequency) {
-//             'Weekly' => $request->loanDuration * 4,
-//             'Monthly' => $request->loanDuration,
-//             'Twice_a_month' => $request->loanDuration * 2,
-//             'Quarterly' => $request->loanDuration / 3,
-//             'Annually' => $request->loanDuration / 12,
-//             default => 1,
-//         };
-
-//         $paymentAmount = $installments > 0 ? $totalExpectedAmount / $installments : $totalExpectedAmount;
-
-//         // Store Loan Data
-//         Loan::create([
-//             'user_id' => $request->user_id,
-//             'loan_type' => $request->loanType,
-//             'loan_amount' => $loanAmount,
-//             'interest_rate' => $interestRate,
-//             'loan_duration' => $request->loanDuration,
-//             'loan_start_date' => $request->loanStartDate,
-//             'loan_end_date' => $request->loanEndDate,
-//             'loan_purpose' => $request->loanPurpose,
-//             'collateral_type' => $request->collateralType,
-//             'repayment_frequency' => $request->repaymentFrequency,
-//             'total_expected_amount' => $totalExpectedAmount,
-//             'payment_amount' => $paymentAmount,
-//         ]);
-
-//         return redirect()->route('loan.index')->with('success', 'Loan application successfully created.');
-//     }
-
-// }
-
-
-public function store(Request $request)
+    public function store(Request $request)
     {
-        // Validate form inputs
-        $validatedData = $request->validate([
+        $request->validate([
             'user_id' => 'required|exists:users,id',
-            'loanType' => 'required|exists:loan_types,id',
-            'loanAmount' => 'required|numeric|min:1',
-            'interestRate' => 'required|numeric|min:0',
-            'loanDuration' => 'required|numeric|min:1',
-            'repaymentFrequency' => 'required|string',
-            'loanStartDate' => 'required|date',
-            'loanEndDate' => 'required|date|after_or_equal:loanStartDate',
-            'loanPurpose' => 'nullable|string|max:255',
-            'collateralType' => 'nullable|string|max:255',
+            'loan_type' => 'required|exists:loan_types,id',
+            'loan_amount' => 'required|numeric|min:1',
+            'interest_rate' => 'required|numeric',
+            'loan_duration' => 'required|numeric|min:1',
+            'repayment_frequency' => 'required',
+            'loan_start_date' => 'required|date',
+            'loan_end_date' => 'required|date|after:loan_start_date',
         ]);
 
-        try {
-            // Calculate total expected amount and payment amount if needed
-            $interestRate = $validatedData['interestRate'] / 100;
-            $loanAmount = $validatedData['loanAmount'];
-            $totalInterest = $loanAmount * $interestRate;
-            $totalExpectedAmount = $loanAmount + $totalInterest;
+        $userId = $request->user_id;
+        $loanTypeId = $request->loan_type;
 
-            // Store the loan in the database
-            $loan = new Loan();
-            $loan->user_id = $validatedData['user_id'];
-            $loan->loan_type_id = $validatedData['loanType'];
-            $loan->loan_amount = $loanAmount;
-            $loan->interest_rate = $validatedData['interestRate'];
-            $loan->loan_duration = $validatedData['loanDuration'];
-            $loan->repayment_frequency = $validatedData['repaymentFrequency'];
-            $loan->loan_start_date = $validatedData['loanStartDate'];
-            $loan->loan_end_date = $validatedData['loanEndDate'];
-            $loan->loan_purpose = $validatedData['loanPurpose'];
-            $loan->collateral_type = $validatedData['collateralType'];
-            $loan->total_expected_amount = $totalExpectedAmount;
+        // Count active loans of the same type for this user
+
+
+        // Count active loans of the same type for this user, excluding fully settled loans
+        $activeLoans = Loan::where('user_id', $userId)
+            ->where('loan_type', $loanTypeId)
+            ->where(function ($query) {
+                $query->where('loan_status', '!=', 'Fully Paid')  // Exclude fully paid loans
+                    ->where('balance', '>', 0);                // Only count loans with remaining balance
+            })
+            ->count();
+
+
+
+
+        // $activeLoans = Loan::where('user_id', $userId)
+        //     ->where('loan_type', $loanTypeId)
+        //     ->where('loan_status', '!=', 'Fully Paid') // Checking loans that are not fully repaid
+        //     ->count();
+
+        // Allow up to 2 active loans of the same type
+        if ($activeLoans >= 2) {
+            return back()->with('error', 'You cannot take more than 2 active loans of the same type unless one is fully paid.');
+        }
+
+        // Determine loan status based on dates and payments
+        $loan_status = 'Active'; // Default status
+        $balance = $request->loan_amount; // Initial balance is the loan amount
+
+        if (now()->greaterThan($request->loan_end_date) && $balance > 0) {
+            $loan_status = 'Overdue';
+        }
+
+        // Create the loan if within the limit
+        Loan::create([
+            'user_id' => $userId,
+            'loan_type' => $loanTypeId,
+            'loan_amount' => $request->loan_amount,
+            'interest_rate' => $request->interest_rate,
+            'loan_duration' => $request->loan_duration,
+            'repayment_frequency' => $request->repayment_frequency,
+            'total_expected_amount' => $request->total_expected_amount,
+            'payment_amount' => $request->payment_amount,
+            'loan_start_date' => $request->loan_start_date,
+            'loan_end_date' => $request->loan_end_date,
+            'loan_purpose' => $request->loan_purpose,
+            'collateral_type' => $request->collateral_type,
+            'repayment_amount' => 0,
+            'balance' => $balance,
+            'loan_status' => $loan_status,
+        ]);
+
+        return back()->with('success', 'Loan application submitted successfully.');
+    }
+
+
+
+
+    public function view()
+    {
+        return view('general.view_loan');
+    }
+
+
+    public function weekly()
+    {
+        $loanType = LoanType::whereRaw('LOWER(loan_name) = ?', ['Weekly Loan'])->first();
+
+
+        if (!$loanType) {
+            return back()->with('error', 'Loan type "Weekly Loan" not found.');
+        }
+
+        // Fetch all loans related to the "Monthly Loan" type
+        $loans = Loan::with(['user', 'loanType', 'repayments'])
+            ->where('loan_type', $loanType->id)
+            ->get()
+            ->map(function ($loan) {
+                // Calculate total repayments
+                $loan->repayment_amount = $loan->repayments->sum('amount');
+
+                // Calculate balance dynamically
+                $loan->balance = $loan->total_expected_amount - $loan->repayment_amount;
+
+                return $loan;
+            });
+
+        // Separate loans into categories
+        $activeLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->lessThanOrEqualTo($loan->loan_end_date));
+        $settledLoans = $loans->filter(fn($loan) => $loan->balance == 0);
+        $overdueLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->greaterThan($loan->loan_end_date));
+
+
+        // Get counts
+        $totalLoans = $loans->count();
+        $activeCount = $activeLoans->count();
+        $settledCount = $settledLoans->count();
+        $overdueCount = $overdueLoans->count();
+
+        return view('general.monthly_loan', compact('activeLoans', 'settledLoans', 'overdueLoans', 'totalLoans', 'activeCount', 'settledCount', 'overdueCount'));
+    }
+
+
+    public function getLoanDetails($loan_id)
+    {
+        $loan = Loan::find($loan_id);
+        $total_expected = $loan->total_expected_amount; // Total to be paid
+        $total_repaid = Repayment::where('loan_id', $loan->id)->sum('amount'); // Total repaid
+        $balance = $total_expected - $total_repaid; // Remaining balance
+
+        return response()->json([
+            'total_expected' => $total_expected,
+            'total_repaid' => $total_repaid,
+            'balance' => $balance,
+        ]);
+    }
+
+
+
+    public function repay(Request $request, $id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        // Update repayment amount
+        $loan->repayment_amount += $request->repayment_amount;
+
+        // Update balance
+        $loan->balance = $loan->total_expected_amount - $loan->repayment_amount;
+
+        // Save changes
+        $loan->save();
+
+        return redirect()->back()->with('success', 'Repayment successful');
+    }
+
+
+    public function repayment()
+    {
+        $users = User::whereHas('loans', function ($query) {
+            $query->where('balance', '>', 0); // Only get users who have unpaid loans
+        })->get();
+
+
+        return view('general.repayment', compact('users'));
+    }
+
+
+    public function fetchLoans(Request $request)
+    {
+        $user_id = $request->user_id;
+
+        $loans = Loan::where('user_id', $user_id)
+            ->with('loanType') // Ensure we load the loan type relationship
+            ->get();
+
+        return response()->json($loans);
+    }
+
+    public function processTransaction(Request $request)
+    {
+        Log::info('Processing Transaction', $request->all()); // Debugging log
+
+        // Validation
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'loan_id' => 'nullable|exists:loans,id',
+            'loan_amount' => 'nullable|numeric|min:0',
+            'savings_amount' => 'nullable|numeric|min:0',
+        ]);
+
+        // Process Loan Repayment if amount is greater than 0
+        if ($request->loan_id && $request->loan_amount > 0) {
+            $loan = Loan::findOrFail($request->loan_id);
+
+            // Check if loan is fully paid
+            if ($loan->balance <= 0) {
+                return back()->with('error', 'This loan is already fully paid.');
+            }
+
+            // Update repayment amount
+            $loan->repayment_amount += $request->loan_amount;
+
+            // Deduct repayment from balance
+            $loan->balance = $loan->total_expected_amount - $loan->repayment_amount;
+
+            // Ensure balance doesn't go negative
+            if ($loan->balance < 0) {
+                $loan->balance = 0;
+            }
+
+            // Save updated loan
             $loan->save();
 
-            // Redirect with success notification
-            return redirect()->back()->with('success', 'Loan application submitted successfully.');
-        } catch (\Exception $e) {
-            // Handle unexpected errors
-            return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
+            // Save repayment record
+            Repayment::create([
+                'user_id' => $request->user_id,
+                'loan_id' => $request->loan_id,
+                'amount' => $request->loan_amount,
+                'paid_at' => now(),
+            ]);
         }
+
+        // Process Savings if amount is greater than 0
+        if ($request->savings_amount > 0) {
+            Saving::create([
+                'user_id' => $request->user_id,
+                'amount' => $request->savings_amount,
+                'date' => now()->toDateString(),
+                'saved_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Transaction processed successfully.');
+    }
+
+
+    public function monthly()
+    {
+        $loanType = LoanType::whereRaw('LOWER(loan_name) = ?', ['Monthly Loan'])->first();
+
+
+        if (!$loanType) {
+            return back()->with('error', 'Loan type "Monthly Loan" not found.');
+        }
+
+        // Fetch all loans related to the "Monthly Loan" type
+        $loans = Loan::with(['user', 'loanType', 'repayments'])
+            ->where('loan_type', $loanType->id)
+            ->get()
+            ->map(function ($loan) {
+                // Calculate total repayments
+                $loan->repayment_amount = $loan->repayments->sum('amount');
+
+                // Calculate balance dynamically
+                $loan->balance = $loan->total_expected_amount - $loan->repayment_amount;
+
+                return $loan;
+            });
+
+        // Separate loans into categories
+        $activeLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->lessThanOrEqualTo($loan->loan_end_date));
+        $settledLoans = $loans->filter(fn($loan) => $loan->balance == 0);
+        $overdueLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->greaterThan($loan->loan_end_date));
+
+
+        // Get counts
+        $totalLoans = $loans->count();
+        $activeCount = $activeLoans->count();
+        $settledCount = $settledLoans->count();
+        $overdueCount = $overdueLoans->count();
+
+        return view('general.monthly_loan', compact('activeLoans', 'settledLoans', 'overdueLoans', 'totalLoans', 'activeCount', 'settledCount', 'overdueCount'));
+    }
+
+    public function assets()
+    {
+        $loanType = LoanType::whereRaw('LOWER(loan_name) = ?', ['assets loan'])->first();
+
+
+        if (!$loanType) {
+            return back()->with('error', 'Loan type "Assets Loan" not found.');
+        }
+
+        // Fetch all loans related to the "Monthly Loan" type
+        $loans = Loan::with(['user', 'loanType', 'repayments'])
+            ->where('loan_type', $loanType->id)
+            ->get()
+            ->map(function ($loan) {
+                // Calculate total repayments
+                $loan->repayment_amount = $loan->repayments->sum('amount');
+
+                // Calculate balance dynamically
+                $loan->balance = $loan->total_expected_amount - $loan->repayment_amount;
+
+                return $loan;
+            });
+
+        // Separate loans into categories
+        $activeLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->lessThanOrEqualTo($loan->loan_end_date));
+        $settledLoans = $loans->filter(fn($loan) => $loan->balance == 0);
+        $overdueLoans = $loans->filter(fn($loan) => $loan->balance > 0 && now()->greaterThan($loan->loan_end_date));
+
+
+        // Get counts
+        $totalLoans = $loans->count();
+        $activeCount = $activeLoans->count();
+        $settledCount = $settledLoans->count();
+        $overdueCount = $overdueLoans->count();
+
+        return view('general.assets_loan', compact('activeLoans', 'settledLoans', 'overdueLoans', 'totalLoans', 'activeCount', 'settledCount', 'overdueCount'));
+    }
+
+
+
+
+
+
+
+
+    //// normal user side ///
+
+
+
+    public function loan_apply(Request $request)
+    {
+        $userId = Auth::id();
+
+        // Fetch loan types
+        $loanTypes = LoanType::all();
+
+        $interestRate = null;
+        $selectedLoanTypeId = $request->loanType;
+
+        if ($selectedLoanTypeId) {
+            $loanType = LoanType::find($selectedLoanTypeId);
+            $interestRate = $loanType ? $loanType->interest_rate : null;
+        }
+
+        // 1. Check if bio-data is completed
+        $client = Client::where('user_id', $userId)->first();
+        if (!$client) {
+            return redirect()->back()->with('error', 'You are not eligible to apply for a loan. Please complete your bio-data first.');
+        }
+
+        // 2. Optional: check if user is trying to reapply for same loan type before repaying 75%
+        if ($selectedLoanTypeId) {
+            $existingLoan = Loan::where('user_id', $userId)
+                ->where('loan_type_id', $selectedLoanTypeId)
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            if ($existingLoan) {
+                $amountPaid = $existingLoan->amount_paid ?? 0;
+                $totalAmount = $existingLoan->total_amount ?? 1;
+                $percentagePaid = ($amountPaid / $totalAmount) * 100;
+
+                if ($percentagePaid < 75) {
+                    return redirect()->back()->with('error', 'You already have a loan of this type. You must repay at least 75% before applying again.');
+                }
+            }
+        }
+
+        return view('loan_apply', compact('loanTypes', 'interestRate'));
+    }
+
+
+
+    public function apply(Request $request)
+    {
+        $validated = $request->validate([
+            'loan_type' => 'required|exists:loan_types,id',
+            'loan_amount' => 'required|numeric|min:1',
+            'interest_rate' => 'required|numeric|min:0',
+            'loan_duration' => 'required|integer|min:1',
+            'repayment_frequency' => 'required|string',
+            'total_expected_amount' => 'required|numeric',
+            'payment_amount' => 'required|numeric',
+            'loan_start_date' => 'required|date',
+            'loan_end_date' => 'required|date|after_or_equal:loan_start_date',
+            'collateral' => 'nullable|string|max:255',
+        ]);
+
+        $apply = LoanApply::create([
+            'user_id' => Auth::id(),
+            'loan_type_id' => $validated['loan_type'],
+            'loan_amount' => $validated['loan_amount'],
+            'interest_rate' => $validated['interest_rate'],
+            'loan_duration' => $validated['loan_duration'],
+            'repayment_frequency' => $validated['repayment_frequency'],
+            'total_expected_amount' => $validated['total_expected_amount'],
+            'payment_amount' => $validated['payment_amount'],
+            'loan_start_date' => $validated['loan_start_date'],
+            'loan_end_date' => $validated['loan_end_date'],
+            'collateral' => $validated['collateral'] ?? null,
+        ]);
+
+        return redirect()->back()->with('success', 'Loan application submitted successfully!');
+    }
+
+
+    public function bio_data()
+    {
+                // Fetch the role with the name "Officer"
+                $role = Role::where('role_name', 'Officer')->first();
+
+                // Check if the role exists
+                if (!$role) {
+                    // No officers exist, return an empty collection and a notice
+                    $officers = collect(); // Empty collection
+                    $notice = 'No officers with the role "Officer" exist yet.';
+                    return view('general.client', compact('officers', 'notice'));
+                }
+        
+                // Fetch officers with the role of "Officer"
+                $officers = LoanOfficer::where('role_id', $role->id)->get();
+
+        return view('bio_data', compact('officers'));
     }
 }

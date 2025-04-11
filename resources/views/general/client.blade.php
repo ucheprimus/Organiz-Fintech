@@ -158,7 +158,7 @@
                                 <ul id="search_results" class="list-group mt-2 d-none"></ul>
                             </div>
 
-                            <input type="text" name="user_id" id="user_id">
+                            <input type="hidden" name="user_id" id="user_id">
 
                             <script>
                                 const searchInput = document.getElementById('search_user');
@@ -330,6 +330,17 @@
                                         <input type="file" class="form-control" id="utility_bill" name="utility_bill"
                                             value="{{ old('utility_bill') }}">
                                     </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="account_type">Select Account Type</label>
+                                        <select class="form-control" id="account_type" name="account_type" required>
+                                            <option value="" disabled selected>-- Select --</option>
+                                            <option value="savings">Savings</option>
+                                            <option value="loan">Loan</option>
+                                            <option value="investment">Investment</option>
+                                        </select>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
@@ -384,19 +395,19 @@
                                             value="{{ old('bank_name') }}">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="account_type" class="form-label">Account Type</label>
-                                        <select class="form-select" id="account_type" name="account_type">
+                                        <label for="bank_account_type" class="form-label">Bank Account Type</label>
+                                        <select class="form-select" id="bank_account_type" name="bank_account_type">
                                             <option value="">select ---</option>
                                             <option value="savings"
-                                                {{ old('account_type') == 'savings' ? 'selected' : '' }}>
+                                                {{ old('bank_account_type') == 'savings' ? 'selected' : '' }}>
                                                 Savings Loan</option>
                                             <option value="current"
-                                                {{ old('account_type') == 'current' ? 'selected' : '' }}>
+                                                {{ old('bank_account_type') == 'current' ? 'selected' : '' }}>
                                                 Current</option>
-                                            <option value="fixed" {{ old('account_type') == 'fixed' ? 'selected' : '' }}>
+                                            <option value="fixed" {{ old('bank_account_type') == 'fixed' ? 'selected' : '' }}>
                                                 Fixed</option>
                                             <option value="domicillary"
-                                                {{ old('account_type') == 'domicillary' ? 'selected' : '' }}>Domicillary
+                                                {{ old('bank_account_type') == 'domicillary' ? 'selected' : '' }}>Domicillary
                                                 Loan
                                             </option>
                                         </select>
@@ -456,8 +467,6 @@
                                 <button type="submit" class="btn btn-primary">Submit Application</button>
                             </div>
                     </form>
-
-
 
                 </div>
             </div>

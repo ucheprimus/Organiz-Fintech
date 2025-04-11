@@ -35,7 +35,7 @@ Manager
                 <!-- <a href="#" class="btn btn-label-info btn-round me-2">Manage</a> -->
                 <!-- Button to trigger the modal -->
                 <!-- Button to trigger modal -->
-                <a href="#" class="btn btn-primary btn-round" data-bs-toggle="modal" data-bs-target="#addBranchModal">
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
                     Add Manager
                 </a>
 
@@ -102,16 +102,19 @@ Manager
 
                                         <!-- Action Buttons -->
                                         <td>
-                                            <!-- Edit Button -->
-                                            <a href="{{ route('adminmanageredit', $manager->id) }}" class="btn btn-primary btn-sm">Edit</a>
-
-                                            <!-- Delete Button -->
-                                            <form action="{{ route('adminmanagerdestroy', $manager->id) }}" method="POST" style="display:inline-block;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this manager?')">Delete</button>
-                                            </form>
+                                            <div class="d-flex gap-1">
+                                                <!-- Edit Button -->
+                                                <a href="{{ route('adminmanageredit', $manager->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                        
+                                                <!-- Delete Button -->
+                                                <form action="{{ route('adminmanagerdestroy', $manager->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this manager?')">Delete</button>
+                                                </form>
+                                            </div>
                                         </td>
+                                        
                                     </tr>
                                     @endforeach
                                 </tbody>

@@ -119,20 +119,26 @@
                                             <span class="sub-item">Give Loans</span>
                                         </a>
                                     </li>
+
+                                    <li>
+                                        <a href="{{route('viewloan')}}">
+                                            <span class="sub-item">View Loans</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
                         <li class="nav-item">
                             <a data-bs-toggle="collapse" href="#maps">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <p>Maps</p>
+                                <p>Repayment/Loan</p>
                                 <span class="caret"></span>
                             </a>
                             <div class="collapse" id="maps">
                                 <ul class="nav nav-collapse">
                                     <li>
-                                        <a href="maps/googlemaps.html">
-                                            <span class="sub-item">Google Maps</span>
+                                        <a href="{{route('repayment')}}">
+                                            <span class="sub-item">Repay Loan</span>
                                         </a>
                                     </li>
                                     <li>
@@ -146,19 +152,19 @@
                         <li class="nav-item">
                             <a data-bs-toggle="collapse" href="#charts">
                                 <i class="far fa-chart-bar"></i>
-                                <p>Charts</p>
+                                <p>Savings / Withdrawal</p>
                                 <span class="caret"></span>
                             </a>
                             <div class="collapse" id="charts">
                                 <ul class="nav nav-collapse">
                                     <li>
-                                        <a href="charts/charts.html">
-                                            <span class="sub-item">Chart Js</span>
+                                        <a href="{{route('user_savings')}}">
+                                            <span class="sub-item">Savings</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="charts/sparkline.html">
-                                            <span class="sub-item">Sparkline</span>
+                                        <a href="{{route('withdraw')}}">
+                                            <span class="sub-item">Withdraw</span>
                                         </a>
                                     </li>
                                 </ul>

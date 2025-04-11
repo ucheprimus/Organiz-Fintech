@@ -7,6 +7,10 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
     <link rel="icon" href="/admin/assets/img/kaiadmin/favicon.ico" type="image/x-icon" />
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
     <!-- Fonts and icons -->
     <script src="/admin/assets/js/plugin/webfont/webfont.min.js"></script>
     <script>
@@ -59,20 +63,20 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         /* Hover effect with a wavy animation */
         .custom-tab:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
             transform: scale(1.05);
         }
-        
+
         /* Active tab styles */
         .custom-tab.active {
             background: linear-gradient(45deg, #43e97b, #38f9d7);
             color: #fff;
         }
-        
+
         /* Wavy effect for the background */
         .custom-tab::before {
             content: '';
@@ -86,22 +90,22 @@
             transition: left 0.3s ease-in-out;
             z-index: 1;
         }
-        
+
         /* Animation on hover */
         .custom-tab:hover::before {
             left: 100%;
         }
-        
+
         /* Ensure the text stays above the effect */
         .custom-tab span {
             position: relative;
             z-index: 2;
         }
-        </style>
-        
+    </style>
 
 
-    
+
+
 </head>
 
 <body>

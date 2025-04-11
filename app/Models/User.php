@@ -92,7 +92,23 @@ class User extends Authenticatable
         return $this->belongsToMany(Union::class, 'union_members', 'user_id', 'union_id');
     }
 
-   
+
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }  
+
+
+    public function savings()
+    {
+        return $this->hasMany(Saving::class);
+    }
+
+public function withdrawals()
+{
+    return $this->hasMany(Withdrawal::class);
+}
+
     
 
 }

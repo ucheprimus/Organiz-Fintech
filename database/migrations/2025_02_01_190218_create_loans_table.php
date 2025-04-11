@@ -11,23 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('loans', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-
-    $table->string('loan_type');
-    $table->decimal('loan_amount', 15, 2);
-    $table->decimal('interest_rate', 5, 2);
-    $table->integer('loan_duration');
-    $table->string('repayment_frequency');
-    $table->decimal('total_expected_amount', 15, 2);
-    $table->decimal('payment_amount', 15, 2);
-    $table->date('loan_start_date');
-    $table->date('loan_end_date');
-    $table->text('loan_purpose')->nullable();
-    $table->string('collateral_type')->nullable();
-            $table->timestamps();
-        });
+            Schema::create('loans', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('loan_type')->nullable()->constrained()->onDelete('cascade'); 
+                $table->decimal('loan_amount', 15, 2);
+                $table->decimal('interest_rate', 5, 2);
+                $table->integer('loan_duration');
+                $table->string('repayment_frequency');
+                $table->decimal('total_expected_amount', 15, 2);
+                $table->decimal('payment_amount', 15, 2);
+                $table->date('loan_start_date');
+                $table->date('loan_end_date');
+                $table->text('loan_purpose')->nullable();
+                $table->decimal('repayment_amount', 15, 2)->default(0);
+                $table->decimal('balance', 15, 2)->default(0);
+                $table->string('collateral_type')->nullable();
+                $table->enum('loan_status', ['Active', 'Fully Paid', 'Overdue', 'Defaulted'])->default('Active'); // Removed ->after('balance')
+                $table->timestamps();
+            });
+            
     }
 
     /**

@@ -25,7 +25,7 @@ class Client extends Model
             'monthly_income',
             'job_duration',
             'bank_name',
-            'account_type',
+            'bank_account_type',
             'account_no',
             'g_name',
             'g_phone',
@@ -34,6 +34,7 @@ class Client extends Model
             'g_occupation',
             'g_passport',
             'officer',
+            'account_type',
         ];
     
     

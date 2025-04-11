@@ -136,7 +136,7 @@
                             <div class="tab-pane fade show active" id="members" role="tabpanel"
                                 aria-labelledby="members-tab">
                                 <h5>Members</h5>
-                                
+
                                 <h1>Members of {{ $union->name }} Union</h1>
                                 <table class="table">
                                     <thead>
@@ -147,14 +147,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($union->users as $user)
-                                        <tr>
-                                            <td>{{ $user->name }}</td>
-                                            <td>{{ $user->email }}</td>
-                                            <td>
-                                                <button class="btn btn-danger btn-sm" onclick="showPasswordModal({{ $user->id }})">Remove</button>
-                                            </td>
-                                        </tr>
+                                        @foreach ($union->users as $user)
+                                            <tr>
+                                                <td>{{ $user->name }}</td>
+                                                <td>{{ $user->email }}</td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm"
+                                                        onclick="showPasswordModal({{ $user->id }})">Remove</button>
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -175,8 +176,9 @@
                                 <!-- Form to Save Selected Members -->
                                 <form id="saveForm" action="/add-user-to-union" method="POST">
                                     @csrf
-                                    <input type="" name="union_id" value="{{ $union->id }}"> <!-- Union ID, fixed -->
-                                
+                                    <input type="hidden" name="union_id" value="{{ $union->id }}">
+                                    <!-- Union ID, fixed -->
+
                                     <table class="table">
                                         <thead>
                                             <tr>
@@ -187,21 +189,22 @@
                                         </thead>
                                         <tbody id="tableBody"></tbody>
                                     </table>
-                                
-                                    <button id="saveBtn" class="btn btn-primary mt-3 ">Save</button> <!-- Save Button -->
+
+                                    <button id="saveBtn" class="btn btn-primary mt-3 ">Save</button>
+                                    <!-- Save Button -->
                                 </form>
-                                
+
                             </div>
-                           
+
                             <script>
                                 const searchInput = document.getElementById('search_user');
                                 const resultsList = document.getElementById('search_results');
                                 const tableBody = document.getElementById('tableBody');
-                                
+
                                 // Search for users
-                                searchInput.addEventListener('input', function () {
+                                searchInput.addEventListener('input', function() {
                                     const query = searchInput.value.trim();
-                                
+
                                     if (query.length >= 2) {
                                         fetch(`/search-user?query=${encodeURIComponent(query)}`)
                                             .then(response => response.json())
@@ -219,20 +222,20 @@
                                         resultsList.classList.add('d-none');
                                     }
                                 });
-                            
+
                                 // Save user to union (AJAX request to server)
                                 function saveUserToUnion(userId) {
                                     fetch('/add-user-to-union', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                        },
-                                        body: JSON.stringify({
-                                            union_id: document.querySelector('[name="union_id"]').value,
-                                            user_id: userId,
-                                        }),
-                                    })
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                            },
+                                            body: JSON.stringify({
+                                                union_id: document.querySelector('[name="union_id"]').value,
+                                                user_id: userId,
+                                            }),
+                                        })
                                         .then((response) => response.json())
                                         .then((data) => {
                                             if (data.success) {
@@ -246,53 +249,52 @@
                                             alert('Failed to add the user to the union.');
                                         });
                                 }
-                            
+
                                 // Add user to the table and save under union
+
                                 function addUserToUnion(user) {
-                                    // Create hidden input for the user_id (add to form)
+                                    // Check if user is already in the table
+                                    if (document.querySelector(`tr[data-id="${user.id}"]`)) {
+                                        alert("User already added to the union.");
+                                        return;
+                                    }
+
+                                    // Create hidden input for form submission
                                     const userIdInput = document.createElement('input');
                                     userIdInput.type = 'hidden';
-                                    userIdInput.name = 'user_id[]'; // Array notation to submit multiple user_ids
+                                    userIdInput.name = 'user_id[]'; // Array notation
                                     userIdInput.value = user.id;
                                     document.getElementById('saveForm').appendChild(userIdInput);
 
-                                    // Create the row in the table for the user
+                                    // Create table row
                                     const newRow = document.createElement('tr');
                                     newRow.setAttribute('data-id', user.id);
+                                    newRow.innerHTML = `
+                                        <td>${user.name}</td>
+                                        <td>${user.email}</td>
+                                        <td><button class="btn btn-danger btn-sm" onclick="removeUser(${user.id})">Remove</button></td>
+                                    `;
 
-                                    // Add user details to the table row
-                                    ['name', 'email'].forEach(field => {
-                                        const cell = document.createElement('td');
-                                        cell.textContent = user[field];
-                                        newRow.appendChild(cell);
-                                    });
-
-                                    // Add delete button to remove user from table and hidden input from form
-                                    const deleteCell = document.createElement('td');
-                                    const deleteBtn = document.createElement('button');
-                                    deleteBtn.classList.add('btn', 'btn-danger', 'btn-sm');
-                                    deleteBtn.textContent = 'Remove';
-                                    deleteBtn.addEventListener('click', () => {
-                                        newRow.remove();
-                                        // Also remove the corresponding user_id input
-                                        document.querySelector(`input[name="user_id[]"][value="${user.id}"]`).remove();
-                                    });
-                                    deleteCell.appendChild(deleteBtn);
-                                    newRow.appendChild(deleteCell);
-
-                                    // Append the row to the table
+                                    // Append row to table
                                     document.getElementById('tableBody').appendChild(newRow);
 
                                     // Show the Save button when users are added
                                     document.getElementById('saveBtn').classList.remove('d-none');
                                 }
 
+                                // Remove user from table and form
+                                function removeUser(userId) {
+                                    document.querySelector(`tr[data-id="${userId}"]`).remove();
+                                    document.querySelector(`input[name="user_id[]"][value="${userId}"]`).remove();
+                                }
+
+
                                 // Create search result item
                                 function createSearchResult(user) {
                                     const li = document.createElement('li');
                                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
                                     li.textContent = `${user.name} (${user.email})`;
-                            
+
                                     const addButton = document.createElement('button');
                                     addButton.className = 'btn btn-sm btn-success ms-2';
                                     addButton.textContent = 'Add';
@@ -301,11 +303,11 @@
                                         addUserToTable(user); // Display the user in the table
                                         resultsList.classList.add('d-none'); // Hide results after adding
                                     });
-                            
+
                                     li.appendChild(addButton);
                                     resultsList.appendChild(li);
                                 }
-                            
+
                                 // Display "No Results" message
                                 function displayNoResults() {
                                     resultsList.classList.remove('d-none');
@@ -314,8 +316,8 @@
                                     `;
                                 }
                             </script>
-                            
-                            
+
+
 
 
                             <!-- Create New Tab -->
@@ -488,8 +490,90 @@
                             <!-- Group Disbursement Tab -->
                             <div class="tab-pane fade" id="group-disbursement" role="tabpanel"
                                 aria-labelledby="group-disbursement-tab">
-                                <h5>Group Disbursement</h5>
-                                <p>Manage group disbursement settings and allocate resources to union members.</p>
+                               
+                                <div class="container mt-4">
+                                    <h4>Group Loan Disbursement</h4>
+                                
+                                    <!-- Total Amount Input -->
+                                    <div class="mb-3">
+                                        <label for="total_amount" class="form-label">Total Amount for Union</label>
+                                        <input type="number" id="total_amount" class="form-control" placeholder="Enter total loan amount" min="0">
+                                    </div>
+                                
+                                    <!-- Loan Disbursement Table -->
+                                    <form action="/disburse-loan" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="union_id" value="{{ $union->id }}">
+                                        
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Loan Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="member_list">
+                                                @foreach($union->users as $user)
+                                                <tr>
+                                                    <td>{{ $user->name }}</td>
+                                                    <td>{{ $user->email }}</td>
+                                                    <td>
+                                                        <input type="number" name="loan_amount[{{ $user->id }}]" class="form-control loan_amount" min="0" data-user-id="{{ $user->id }}">
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody><tbody id="member_list">
+                                                @foreach($union->users as $user)
+                                                <tr>
+                                                    <td>{{ $user->name }}</td>
+                                                    <td>{{ $user->email }}</td>
+                                                    <td>
+                                                        <input type="number" name="loan_amount[{{ $user->id }}]" class="form-control loan_amount" min="0" data-user-id="{{ $user->id }}">
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                
+                                        <!-- Submit Button -->
+                                        <button type="submit" class="btn btn-primary">Disburse Loan</button>
+                                    </form>
+                                </div>
+                                
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function() {
+                                        const totalAmountInput = document.getElementById("total_amount");
+                                        const loanInputs = document.querySelectorAll(".loan_amount");
+                                
+                                        // Function to distribute amount evenly
+                                        function distributeAmount() {
+                                            let totalAmount = parseFloat(totalAmountInput.value) || 0;
+                                            let memberCount = loanInputs.length;
+                                            let dividedAmount = memberCount > 0 ? (totalAmount / memberCount).toFixed(2) : 0;
+                                
+                                            loanInputs.forEach(input => {
+                                                input.value = dividedAmount;
+                                            });
+                                        }
+                                
+                                        // When total amount is changed, distribute it
+                                        totalAmountInput.addEventListener("input", distributeAmount);
+                                        
+                                        // Update total field if a user manually edits any loan amount
+                                        loanInputs.forEach(input => {
+                                            input.addEventListener("input", function() {
+                                                let sum = 0;
+                                                loanInputs.forEach(input => {
+                                                    sum += parseFloat(input.value) || 0;
+                                                });
+                                                totalAmountInput.value = sum.toFixed(2); // Update total amount field
+                                            });
+                                        });
+                                    });
+                                </script>
+                                
+                                
                             </div>
                         </div>
                     </div>
@@ -505,80 +589,79 @@
 
 
     <!-- Password Confirmation Modal -->
-<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="passwordModalLabel">Admin Password Required</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="passwordForm">
-                    <div class="mb-3">
-                        <label for="adminPassword" class="form-label">Enter Admin Password</label>
-                        <input type="password" class="form-control" id="adminPassword" placeholder="Admin Password" required>
-                    </div>
-                    <input type="hidden" id="userIdToRemove">
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="confirmRemove()">Confirm</button>
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">Admin Password Required</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">Enter Admin Password</label>
+                            <input type="password" class="form-control" id="adminPassword" placeholder="Admin Password"
+                                required>
+                        </div>
+                        <input type="hidden" id="userIdToRemove">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmRemove()">Confirm</button>
+                </div>
             </div>
         </div>
-    </div>
 
 
-    <script>
-        function showPasswordModal(userId) {
-            // Store the user ID in a hidden input field
-            document.getElementById('userIdToRemove').value = userId;
+        <script>
+            function showPasswordModal(userId) {
+                // Store the user ID in a hidden input field
+                document.getElementById('userIdToRemove').value = userId;
 
-            // Show the modal
-            const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
-            passwordModal.show();
-        }
-
-        function confirmRemove() {
-            const password = document.getElementById('adminPassword').value;
-            const userId = document.getElementById('userIdToRemove').value;
-
-            if (!password) {
-                alert('Please enter the admin password!');
-                return;
+                // Show the modal
+                const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+                passwordModal.show();
             }
 
-            // Send an AJAX request to validate the password and remove the member
-            fetch(`/validate-admin-password-and-remove`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    password: password,
-                    union_id: {{ $union->id }},
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('User removed successfully!');
-                    location.reload(); // Reload the page to update the table
-                } else {
-                    alert('Error: ' + data.message);
+            function confirmRemove() {
+                const password = document.getElementById('adminPassword').value;
+                const userId = document.getElementById('userIdToRemove').value;
+
+                if (!password) {
+                    alert('Please enter the admin password!');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to remove member');
-            });
-        }
 
-    </script>
-</div>
-
+                // Send an AJAX request to validate the password and remove the member
+                fetch(`/validate-admin-password-and-remove`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            password: password,
+                            union_id: {{ $union->id }},
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('User removed successfully!');
+                            location.reload(); // Reload the page to update the table
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to remove member');
+                    });
+            }
+        </script>
+    </div>
 @endsection
 
 @section('scripts')

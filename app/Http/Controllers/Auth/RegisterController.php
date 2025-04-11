@@ -7,12 +7,30 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\Events\Registered;
+
 use Illuminate\Http\Request;
 
 
 class RegisterController extends Controller
 {
     use RegistersUsers;
+
+    ///// foro my own self////
+
+    public function register(Request $request)
+{
+    $this->validator($request->all())->validate();
+
+    // Create the user
+    $user = $this->create($request->all());
+
+    // Fire the registered event
+    event(new Registered($user));
+
+    // Redirect to login page with success message
+    return redirect()->route('login')->with('success', 'Registration successful! Please log in.');
+}
 
     /**
      * Where to redirect users after registration (default registration).

@@ -35,7 +35,7 @@ Branch
                 <!-- <a href="#" class="btn btn-label-info btn-round me-2">Manage</a> -->
                 <!-- Button to trigger the modal -->
                 <!-- Button to trigger modal -->
-                <a href="#" class="btn btn-primary btn-round" data-bs-toggle="modal" data-bs-target="#addBranchModal">
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
                     Create Branch
                 </a>
 

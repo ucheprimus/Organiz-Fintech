@@ -35,7 +35,7 @@ Loan officer
                 <!-- <a href="#" class="btn btn-label-info btn-round me-2">Manage</a> -->
                 <!-- Button to trigger the modal -->
                 <!-- Button to trigger modal -->
-                <a href="#" class="btn btn-primary btn-round" data-bs-toggle="modal" data-bs-target="#addBranchModal">
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
                     New Officer
                 </a>
 
@@ -93,6 +93,9 @@ Loan officer
                                         <td>{{ $officer->manager->name ?? 'N/A' }}</td>
                                         <td>{{ $officer->date_of_hire }}</td>
                                         <td>
+                                            <div class="d-flex gap-2">
+
+                                                
                                             <a href="{{ route('adminloanofficeredit', ['id' => $officer->id]) }}" class="btn btn-warning">Edit</a>
 
                                             <form action="{{ route('adminloanofficerdestroy', $officer->id) }}" method="POST" style="display:inline;">
@@ -100,6 +103,8 @@ Loan officer
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger">Delete</button>
                                             </form>
+
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -317,8 +322,9 @@ Loan officer
 
                     <br>
                     <div class="text-center">
-                        <input type="submit" class="btn btn-primary" value="Submit">
+                        <input type="submit" class="btn btn-primary w-100" value="Submit">
                     </div>
+                    
                 </form>
             </div>
         </div>

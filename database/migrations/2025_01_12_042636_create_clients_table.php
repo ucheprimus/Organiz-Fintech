@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('monthly_income', 10, 2)->nullable();
             $table->integer('job_duration')->nullable();
             $table->string('bank_name')->nullable();
-            $table->string('account_type')->nullable();
+            $table->string('bank_account_type')->nullable();
             $table->string('account_no')->nullable();
             $table->string('g_name')->nullable();
             $table->string('g_phone')->nullable();
@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('g_relationship')->nullable();
             $table->string('g_occupation')->nullable();
             $table->string('g_passport')->nullable();
+            $table->enum('account_type', ['savings', 'loan', 'investment'])->default('savings');
             $table->unsignedBigInteger('officer')->nullable(); // Allow null if no officer is assigned
             $table->foreign('officer')->references('id')->on('loan_officers')->onDelete('cascade');
                         $table->timestamps();

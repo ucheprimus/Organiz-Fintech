@@ -35,10 +35,21 @@
                     <!-- <a href="#" class="btn btn-label-info btn-round me-2">Manage</a> -->
                     <!-- Button to trigger the modal -->
                     <!-- Button to trigger modal -->
-                    <a href="#" class="btn btn-primary btn-round" data-bs-toggle="modal"
-                        data-bs-target="#addBranchModal">
-                        Create Union
-                    </a>
+                <!-- Dropdown Menu -->
+<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton"
+            data-bs-toggle="dropdown" aria-expanded="false">
+      Create Union
+    </button>
+  
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <li><a class="dropdown-item" href="#">Weekly Loan</a></li>
+      <li><a class="dropdown-item" href="#">Monthly Loan</a></li>
+      <li><a class="dropdown-item" href="#">Assets Loan</a></li>
+      <li><a class="dropdown-item" href="#">Option 4: Remove Union</a></li>
+    </ul>
+  </div>
+  
 
                 </div>
             </div>
@@ -77,13 +88,16 @@
                                                 readonly>
                                         </div>
 
+                                        <input type="hidden" name="loan_status" value="Active">
+
+
                                         <input type="hidden" id="user_id" name="user_id">
 
 
                                         <div class="col-md-6 mb-3">
                                             <label for="loanType" class="form-label">Loan Type</label>
 
-                                            <select class="form-select" id="loanType" name="loanType">
+                                            <select class="form-select" id="loanType" name="loan_type">
                                                 <option value="" disabled selected>-- Select Loan --</option>
                                                 @foreach ($loanTypes as $type)
                                                     <option value="{{ $type->id }}"
@@ -97,7 +111,7 @@
                                         <!-- Loan Amount -->
                                         <div class="col-md-6 mb-3">
                                             <label for="loanAmount" class="form-label">Loan Amount</label>
-                                            <input type="number" class="form-control" id="loanAmount" name="loanAmount"
+                                            <input type="number" class="form-control" id="loanAmount" name="loan_amount"
                                                 placeholder="Enter loan amount" required>
                                         </div>
 
@@ -105,7 +119,7 @@
                                         <div class="col-md-6 mb-3">
                                             <label for="interestRate" class="form-label">Interest Rate (%)</label>
                                             <input type="number" step="0.01" class="form-control" id="interestRate"
-                                                name="interestRate" value="{{ old('interestRate', $interestRate) }}"
+                                                name="interest_rate" value="{{ old('interestRate', $interestRate) }}"
                                                 placeholder="Enter interest rate" required readonly>
                                         </div>
 
@@ -113,14 +127,14 @@
                                         <div class="col-md-6 mb-3">
                                             <label for="loanDuration" class="form-label">Loan Duration
                                                 (Months/Years)</label>
-                                            <input type="number" class="form-control" id="loanDuration" name="loanDuration"
+                                            <input type="number" class="form-control" id="loanDuration" name="loan_duration"
                                                 placeholder="Enter loan duration" required>
                                         </div>
 
                                         <!-- Repayment Frequency -->
                                         <div class="col-md-6 mb-3">
                                             <label for="repaymentFrequency" class="form-label">Repayment Frequency</label>
-                                            <select class="form-select" id="repaymentFrequency" name="repaymentFrequency">
+                                            <select class="form-select" id="repaymentFrequency" name="repayment_frequency">
                                                 <option value="" disabled selected>-- Select Loan --</option>
 
                                                 <option value="Weekly">Weekly</option>
@@ -137,7 +151,7 @@
                                             <label for="totalExpectedAmount" class="form-label">Total Expected
                                                 Amount</label>
                                             <input type="number" class="form-control" id="totalExpectedAmount"
-                                                name="totalExpectedAmount" readonly>
+                                                name="total_expected_amount" readonly>
                                         </div>
 
                                         <!-- Payment Amount -->
@@ -145,7 +159,7 @@
                                             <label for="paymentAmount" class="form-label">Payment Amount per
                                                 Installment</label>
                                             <input type="number" class="form-control" id="paymentAmount"
-                                                name="paymentAmount" readonly>
+                                                name="payment_amount" readonly>
                                         </div>
 
 
@@ -153,28 +167,38 @@
                                         <div class="col-md-6 mb-3">
                                             <label for="loanStartDate" class="form-label">Loan Start Date</label>
                                             <input type="date" class="form-control" id="loanStartDate"
-                                                name="loanStartDate" required>
+                                                name="loan_start_date" required>
                                         </div>
 
                                         <!-- Loan End Date -->
                                         <div class="col-md-6 mb-3">
                                             <label for="loanEndDate" class="form-label">Loan End Date</label>
                                             <input type="date" class="form-control" id="loanEndDate"
-                                                name="loanEndDate" required>
+                                                name="loan_end_date" required>
                                         </div>
 
                                         <!-- Loan Purpose -->
                                         <div class="col-md-6 mb-3">
                                             <label for="loanPurpose" class="form-label">Loan Purpose</label>
-                                            <textarea class="form-control" id="loanPurpose" name="loanPurpose" rows="1"
+                                            <textarea class="form-control" id="loanPurpose" name="loan_purpose" rows="1"
                                                 placeholder="Describe the purpose of the loan"></textarea>
                                         </div>
 
                                         <!-- Collateral Type -->
                                         <div class="col-md-6 mb-3">
                                             <label for="collateralType" class="form-label">Collateral Type</label>
-                                            <textarea class="form-control" id="collateralType" name="collateralType" rows="1"
+                                            <textarea class="form-control" id="collateralType" name="collateral_type" rows="1"
                                                 placeholder="Enter the collateral for this loan"></textarea>
+                                        </div>
+
+
+
+                                        <div class="col-md-6 mb-3">
+                                            <input type="hidden" class="form-control" id="repaymentAmount"
+                                                name="repayment_amount" value="0" required>
+                                        </div>                                        <div class="col-md-6 mb-3">
+                                            <input type="hidden" class="form-control" id="balance"
+                                                name="balance" value="0" required>
                                         </div>
                                     </div>
 

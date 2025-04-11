@@ -33,10 +33,7 @@ class Union extends Model
     }
 
 
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'union_members', 'union_id', 'user_id');
-    }
+
 
 
 
@@ -44,6 +41,17 @@ public function members()
 {
     return $this->hasMany(UnionMember::class);
 }
+
+
+
+// Use 'users' for the Many-to-Many relationship
+public function users()
+{
+    return $this->belongsToMany(User::class, 'union_members', 'union_id', 'user_id');
+}
+
+
+
 
      // Define the relationship with the Loan Officer
      public function officer()

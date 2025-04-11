@@ -175,28 +175,43 @@ class UnionController extends Controller
         return view('admin.view_union', compact('union', 'officer'));
     }
     
-    
+
+
     public function addUserToUnion(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'union_id' => 'required|exists:unions,id',
-                'user_id' => 'required|array',
-                'user_id.*' => 'exists:users,id', // Ensure each user_id is valid
-            ]);
-    
-            // Loop through user_ids and create the union member record
-            foreach ($validated['user_id'] as $user_id) {
-                UnionMember::create([
-                    'union_id' => $validated['union_id'],
-                    'user_id' => $user_id,
+{
+    try {
+        $validated = $request->validate([
+            'union_id' => 'required|exists:unions,id',
+            'user_id' => 'required|array',
+            'user_id.*' => 'exists:users,id',
+        ]);
+
+        DB::beginTransaction(); // Start transaction
+
+        foreach ($validated['user_id'] as $user_id) {
+            $user = User::find($user_id);
+
+            // Count how many unions this user is already a part of
+            if ($user->unions()->count() >= 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User ID {$user_id} cannot join more than 2 unions."
                 ]);
             }
-    
-            return response()->json(['success' => true, 'message' => 'Users added to union successfully!']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+
+            // Attach user to union (avoids duplicates automatically)
+            $user->unions()->attach($validated['union_id']);
+
         }
+
+        DB::commit(); // Commit transaction
+
+        return response()->json(['success' => true, 'message' => 'Users added to union successfully!']);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Rollback transaction on error
+        return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
+}
+
 
 }

@@ -11,7 +11,9 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\MembersController;
+use App\Http\Controllers\SavingsController;
 use App\Models\LoanType;
+use App\Models\SavingsModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -58,8 +60,59 @@ Route::post('/validate-admin-password-and-remove', [MembersController::class, 'v
 // giving loan, this should be a general route 
 
 Route::get('/loan', [LoanController::class, 'index'])->name('giveloan');
+Route::get('/view', [LoanController::class, 'view'])->name('viewloan');
+
 Route::get('/search-user', [LoanController::class, 'searchUser']);
 Route::post('/loan', [LoanController::class, 'store'])->name('loanstore');
+
+// all loans section 
+Route::get('/weekly_loan', [LoanController::class, 'weekly'])->name('weeklyloan');
+Route::get('/monthly_loan_records', [LoanController::class, 'monthly'])->name('monthlyloan');
+Route::get('/assets_loan_records', [LoanController::class, 'assets'])->name('assetsloan');
+
+
+
+Route::get('/repayment', [LoanController::class, 'repayment'])->name('repayment');
+
+Route::get('/user-loans/{userId}', [LoanController::class, 'getUserLoans']);
+Route::post('/loan-repay', [LoanController::class, 'repayLoan'])->name('loan.repay');
+
+Route::post('/loans/{loan}/repay', [LoanController::class, 'repay'])->name('loan.repay');
+Route::post('/loans/{loan}/repay', [LoanController::class, 'show'])->name('loan.show');
+Route::get('/search-user', [LoanController::class, 'searchUser'])->name('search.user');
+Route::get('/fetch-loans', [LoanController::class, 'fetchLoans'])->name('fetch.loans');
+Route::post('/transaction-process', [LoanController::class, 'processTransaction'])->name('transaction.process');
+
+Route::get('/savings', [SavingsController::class, 'index'])->name('user_savings');
+Route::post('/savings', [SavingsController::class, 'store'])->name('savings.store');
+Route::get('/search-users', [SavingsController::class, 'searchUsers'])->name('searchUsers');
+Route::delete('/savings/{saving}', [SavingsController::class, 'destroy'])->name('savings.destroy');
+Route::get('/savings/user/{id}', [SavingsController::class, 'show'])->name('savings.show');
+Route::get('/savings/{id}/edit', [SavingsController::class, 'edit'])->name('savings.edit');
+Route::post('/savings/{id}/update', [SavingsController::class, 'update'])->name('savings.update');
+Route::get('/withdraw', [SavingsController::class, 'withdrawview'])->name('withdraw');
+Route::post('/withdraw/process', [SavingsController::class, 'process'])->name('withdraw.process');
+Route::get('/withdrawal-history/{user_id}', [SavingsController::class, 'history'])->name('withdraw.history');
+Route::get('/fetch-savings-balance', [SavingsController::class, 'fetchBalance'])->name('fetch.savings.balance');
+Route::get('/withdrawals/{user_id}', [SavingsController::class, 'viewWithdrawals'])->name('withdrawals.view');
+Route::put('/withdrawals/update', [SavingsController::class, 'wupdate'])->name('withdrawals.update');
+
+
+// this is  normal usere accessible routes//
+Route::get('/loan_apply', [LoanController::class, 'loan_apply'])->name('loan_apply');
+Route::post('/loan_apply', [LoanController::class, 'apply'])->name('apply');
+
+Route::get('/bio_data', [LoanController::class, 'bio_data'])->name('bio_data');
+
+
+
+
+
+
+
+
+
+
 
 
 
